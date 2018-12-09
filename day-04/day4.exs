@@ -6,10 +6,25 @@ defmodule Day4 do
       |> process_events
 
     guard = most_minutes_asleep(asleep_minutes)
-    minute = guards_most_sleepy_minute(minutes_guards, guard)
+    [{minute, _}] = guards_most_sleepy_minute(minutes_guards, guard)
+    {most_sleepy_guard, most_sleepy_minute, _} =
+      asleep_minutes
+      |> Enum.map(fn {k,_} -> k end)
+      |> Enum.reduce({"",-1,0}, fn guard, {most_sleepy_guard, most_sleepy_minute, max_minutes} ->
+        [{minute, max_minutes_of_guard}] =
+          minutes_guards
+          |> guards_most_sleepy_minute(guard)
+          |> Enum.map(fn {m,guard_list} ->
+            {m, Enum.count(guard_list, fn x -> x==guard end)}
+          end)
 
-    {guard, minute} |> IO.inspect()
-    String.to_integer(guard) * minute
+        if max_minutes_of_guard > max_minutes do
+          {guard, minute, max_minutes_of_guard}
+        else
+          {most_sleepy_guard, most_sleepy_minute, max_minutes}
+        end
+      end)
+    {String.to_integer(guard) * minute, String.to_integer(most_sleepy_guard) * most_sleepy_minute}
   end
 
   defp parse_events(file_stream) do
@@ -106,14 +121,11 @@ defmodule Day4 do
   end
 
   defp guards_most_sleepy_minute(minutes_guards, guard) do
-    [{minute_of_hour, _}] =
       minutes_guards
       |> Enum.sort(fn {_, v1}, {_, v2} ->
         Enum.count(v1, fn x -> x == guard end) >= Enum.count(v2, fn x -> x == guard end)
       end)
       |> Enum.take(1)
-
-    minute_of_hour
   end
 end
 
@@ -146,7 +158,7 @@ case System.argv() do
                  "[1518-11-05 00:45] falls asleep\n",
                  "[1518-11-05 00:55] wakes up"
                ])
-               |> IO.inspect() == 240
+               |> IO.inspect() == {240, 4455}
       end
     end
 
