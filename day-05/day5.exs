@@ -39,6 +39,33 @@ defmodule Day5 do
     String.upcase(a) == String.upcase(b) && a != b
     # |> IO.inspect(label: "units match " <> a <> ", " <> b <> ": ")
   end
+
+  def react_full(polymer) when is_binary(polymer) do
+    String.graphemes(polymer)
+    |> react_full
+  end
+
+  def react_full(polymer) do
+    {min_length, fully_reacted_polymer} =
+    polymer
+    |> Enum.uniq_by(fn u -> String.upcase(u) end)
+    |> Enum.reduce({Enum.count(polymer), []}, fn unit, {l, result} ->
+      reduced_polymer =
+        polymer
+        |> Enum.filter(fn u -> String.upcase(u) != String.upcase(unit) end)
+        |> react
+
+      length = Enum.count(reduced_polymer)
+
+      if length < l do
+        {length, reduced_polymer}
+      else
+        {l, result}
+      end
+    end)
+
+    {min_length, List.to_string(fully_reacted_polymer)}
+  end
 end
 
 case System.argv() do
@@ -65,6 +92,10 @@ case System.argv() do
       test "test2" do
         assert react("dabAcCaCBAcCcCaDA") == "dabCBDA"
       end
+
+      test "test react_full" do
+        assert react_full("dabAcCaCBAcCcaDA") == {4, "daDA"}
+      end
     end
 
   [input_file] ->
@@ -73,6 +104,11 @@ case System.argv() do
     |> Day5.react()
     |> String.length()
     |> IO.puts()
+
+    input_file
+    |> File.read!()
+    |> Day5.react_full()
+    |> IO.inspect(printable_limit: :infinity)
 
   _ ->
     IO.puts(:stderr, "We expected --test or an input file")
