@@ -47,22 +47,22 @@ defmodule Day5 do
 
   def react_full(polymer) do
     {min_length, fully_reacted_polymer} =
-    polymer
-    |> Enum.uniq_by(fn u -> String.upcase(u) end)
-    |> Enum.reduce({Enum.count(polymer), []}, fn unit, {l, result} ->
-      reduced_polymer =
-        polymer
-        |> Enum.filter(fn u -> String.upcase(u) != String.upcase(unit) end)
-        |> react
+      polymer
+      |> Enum.uniq_by(fn u -> String.upcase(u) end)
+      |> Enum.reduce({Enum.count(polymer), []}, fn unit, {l, result} ->
+        reduced_polymer =
+          polymer
+          |> Enum.filter(fn u -> String.upcase(u) != String.upcase(unit) end)
+          |> react
 
-      length = Enum.count(reduced_polymer)
+        length = Enum.count(reduced_polymer)
 
-      if length < l do
-        {length, reduced_polymer}
-      else
-        {l, result}
-      end
-    end)
+        if length < l do
+          {length, reduced_polymer}
+        else
+          {l, result}
+        end
+      end)
 
     {min_length, List.to_string(fully_reacted_polymer)}
   end
